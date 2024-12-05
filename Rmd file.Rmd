@@ -1,0 +1,428 @@
+---
+title: "An Exploratory Data Analysis of COVID-19 in Belgium"
+author: "D.K.H.Colombage - AS2021464"
+output: 
+  html_document:
+   toc: true
+   toc_float: true
+---
+
+```{r ,echo=FALSE , error=FALSE, message=FALSE , comment=NA }
+
+library(devtools)
+library(sta3262)
+library(coronavirus)
+library(tidyverse)
+library(dplyr)
+
+belgium_covid <- coronavirus %>% filter(country == "Belgium") %>% mutate(cases = replace(cases, which(cases<0), 0))
+View(belgium_covid)
+
+belgium_confirmed <- belgium_covid %>% filter(type == "confirmed") %>% select(date , cases)
+
+belgium_death <- belgium_covid %>% filter(type == "death") %>% select(date , cases)
+
+belgium_recovery <- belgium_covid %>% filter(type == "recovery") %>% select(date , cases)
+
+```
+
+# 1.Introduction
+
+Belgium, officially the Kingdom of Belgium, is a country in Northwestern Europe. The country is bordered by the Netherlands to the north, Germany to the east, Luxembourg to the southeast, France to the south, and the North Sea to the west. It covers an area of 30,689  km2 (11,849 sq mi) and has a population of more than 11.7 million,making it the 22nd most densely populated country in the world and the 6th most densely populated country in Europe, with a density of 383/km2 (990/sq mi). Belgium is part of an area known as the Low Countries, historically a somewhat larger region than the Benelux group of states, as it also included parts of northern France. The capital and largest metropolitan region is Brussels; other major cities are Antwerp, Ghent, Charleroi, Liège, Bruges, Namur, and Leuven. 
+Belgium has a mixed economic system which includes a private-enterprise system, combined with centralized economic planning, and government regulation.
+
+# 2.Exploratory Data Analysis
+
+## 2.1 Structure of Data
+
+The dataset contains the daily summary of Coronavirus cases worldwide. All cases are recorded according to the following format
+
+* date         : Date in YYYY-MM-DD
+* province     : Name of province/state, for countries where data is provided split across multiple provinces/states.
+* country      : Name of country/region.
+* lat          : Latitude of center of geographic region, defined as either country or, if available, province.
+* long         : Longitude of center of geographic region, defined as either country or, if available, province.
+* type         : An indicator for the type of cases (confirmed, death, recovered).
+* cases        : Number of cases on given date.
+* uid          : Country code
+* iso2         : Officially assigned country code identifiers with two-letter
+* iso3         : Officially assigned country code identifiers with three-letter
+* code3        : UN country code
+* combined_key : Country and province (if applicable)
+* population   : Country or province population
+* continent_name : Continent name
+* continent_code : Continent code
+
+**Source** :
+Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE) Coronavirus website.
+
+**Summary of Dataset**
+
+```{r , echo=FALSE , comment=NA , warning=FALSE} 
+summary(belgium_covid)
+```
+
+
+## 2.2 Analysis of Death, Confirmed, Recovered Cases
+
+### 2.2.1 Confirmed COVID-19 Cases
+
+```{r , echo=FALSE , comment=NA, warning=FALSE}
+
+library(knitr)
+library(ggplot2)
+
+#plot for confirm cases in belgium
+ggplot(belgium_confirmed, aes(x = date, y = cases)) +
+  geom_line(color = "blue" , size=0.5) +
+  labs(title = "Figure 1 : Confirmed Cases in Belgium",
+       x = "Date",
+       y = "Number of Confirmed Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+
+```
+
+This chart shows the trend of confirmed COVID-19 cases in Belgium over time. The x-axis represents the date, spanning from 2020 to 2023, while the y-axis shows the number of confirmed cases.
+
+**Early 2020** : The cases were low at the beginning of the pandemic.
+
+**Mid-2020 to 2021**: There were noticeable spikes in cases, indicating waves of increased infection rates.
+
+**Peak in Early 2022**: The highest spike occurred around the beginning of 2022, reflecting a significant surge in cases, likely due to the spread of a new variant.
+
+**Post-2022**: After the peak, the number of cases fluctuated, with smaller spikes, but remained lower compared to the peak.
+
+This pattern indicates the different waves of COVID-19 infections in Belgium, with the largest wave occurring in early 2022. And following table shows aboout numeric values in confirmed cases in Belgium
+
+```{r , echo=FALSE , comment=NA, warning=FALSE}
+kable(summary(belgium_confirmed) , caption = "Table 1: summary of confirmed cases in Belgium")
+```
+
+### 2.2.2 Death COVID-19 Cases
+
+
+```{r , echo=FALSE , comment=NA}
+
+#plot for death cases in belgium
+ggplot(belgium_death, aes(x = date, y = cases)) +
+  geom_line(color = "red") +
+  labs(title = "Figure 2 : Death Cases in Belgium",
+       x = "Date",
+       y = "Number of death Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+```
+
+Above figure shows the number of COVID-19 deaths in Belgium from 2020 to early 2023. In early 2020, there was a big spike with nearly 500 deaths in one day, marking the first major wave of the pandemic. After this peak, the number of deaths dropped but rose again in late 2020 and early 2021 during other waves. From 2021 to 2022, there were smaller waves with fewer deaths compared to the first wave. By early 2023, the number of daily deaths became more stable, but there were still occasional increases.
+
+```{r , echo=FALSE , comment=NA, warning=FALSE}
+kable(summary(belgium_death) , caption = "Table 2: summary of death cases in Belgium")
+```
+
+### 2.2.2 Recovery COVID-19 Cases
+
+```{r , echo=FALSE}
+
+#plot for recovery cases in belgium
+ggplot(belgium_recovery, aes(x = date, y = cases)) +
+  geom_line(color = "green") +
+  labs(title = "Figure 3 : Recovery Cases in Belgium",
+       x = "Date",
+       y = "Number of recovery Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+```
+
+Above figure 3 shows the number of COVID-19 recoveries in Belgium from 2020 to early 2023. In early 2020, there was a steady increase in recoveries, peaking at around 250 per day. This was followed by a sharp rise in late 2020 and early 2021, with recoveries reaching over 750 per day. After this peak, the number of reported recoveries dropped to nearly zero and remained low throughout 2021, 2022, and early 2023. This suggests that either recovery data was not consistently reported after early 2021 or that the focus may have shifted away from tracking recoveries.
+
+```{r , echo=FALSE , comment=NA, warning=FALSE}
+kable(summary(belgium_recovery) , caption = "Table 3: summary of Recovery cases in Belgium")
+```
+
+
+### 2.2.3 Comparison in Belgium
+
+
+```{r , warning=FALSE, echo=FALSE}
+
+# plot for all cases in belgium
+ggplot(belgium_covid, aes(date, cases, col=cases)) +
+  geom_path(size=1) +
+  facet_grid(rows = vars(type)) +
+  labs(title = "Figure 4 : Comparison in Belgium",
+       x="Date",
+       y="Number of Cases")+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+This chart shows the trends in confirmed COVID-19 cases, deaths, and recoveries from 2020 to 2023. The top panel indicates the number of confirmed cases, which peaked significantly in early 2022. The middle panel shows the number of deaths, and the bottom panel represents the number of recoveries. Although the death and recovery figures are not zero, they appear very low compared to the confirmed cases. To better understand the trends for all three metrics (confirmed cases, deaths, and recoveries) simultaneously, the next chart will use a logarithmic scale. This approach will help in visualizing and comparing these different scales more effectively.
+
+
+```{r, warning=FALSE, echo=FALSE}
+
+# plot for all cases in belgium as logrithem
+ggplot(data=belgium_covid, aes(x=date, y=cases, colour = type)) +
+  geom_point() +
+  scale_colour_manual(values = c("confirmed" = "blue", "death" = "red", "recovery" = "green")) +
+  scale_y_log10(labels = scales::comma) +
+  labs(title = "Figure 5 : Comparison in Belgium as logrithem values",
+       x = "Time",
+       y = "Number of Cases") +
+  theme_minimal()
+
+```
+
+This figure uses a logarithmic scale to show the trends in confirmed COVID-19 cases, deaths, and recoveries in Belgium over time. By applying the log function, the chart makes it easier to compare these data points, even though they vary greatly in magnitude.
+
+The blue dots represent confirmed cases, which are consistently higher than the other two metrics. The red dots show deaths, and the green dots indicate recoveries. In the beginning, around 2020, all three metrics had similar values. However, as time progresses, the number of confirmed cases significantly increases compared to deaths and recoveries.
+
+The logarithmic scale helps to visualize all three metrics on the same graph, revealing patterns that are not as obvious in a standard scale. For instance, while confirmed cases show a large spike and higher variability, deaths and recoveries remain relatively lower and more stable. This way, we can see the relative changes and trends of confirmed cases, deaths, and recoveries more clearly over the period from 2020 to 2023.
+
+
+## 2.3 Active Cases in Belgium
+
+```{r, echo=FALSE , comment=NA}
+
+#create pivot table
+belgium_active <- belgium_covid %>% select(date,cases,type) %>% mutate(cases = replace(cases, which(cases < 0), 0))  %>%  pivot_wider(names_from = type, values_from = cases)
+
+#Create active column and add acive values
+belgium_active$active <- numeric(nrow(belgium_active))
+
+belgium_active$active[1] <- belgium_active$confirmed[1] - belgium_active$death[1] - belgium_active$recovery[1]
+
+#go through loop from 2 to all the data
+for (i in 2:nrow(belgium_active)) {
+  belgium_active$active[i] <- belgium_active$active[i-1] + belgium_active$confirmed[i] - belgium_active$death[i] - belgium_active$recovery[i]
+}
+
+```
+
+
+```{r, echo=FALSE , comment=NA}
+
+#plot for active cases in belgium
+ggplot(belgium_active, aes(x = date, y = active)) +
+  geom_line(color = "red") +
+  labs(title = "Figure 6 : Active COVID-19 Cases",
+       x = "Date",
+       y = "Number of active Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+```
+
+This chart shows the number of active COVID-19 cases in Belgium from 2020 to 2023. Active cases are those individuals who are currently infected with COVID-19, excluding those who have recovered or died. 
+
+The line starts near zero in early 2020, indicating few active cases. As time progresses, the number of active cases increases steadily. There are noticeable spikes, especially around early 2022, where the number of active cases rises sharply. By 2023, the number of active cases reaches over 4 million, indicating a significant rise in infections over the years. This chart helps us understand the trend of ongoing COVID-19 infections in Belgium over the given period.
+
+## 2.4 Comparison with neighbor Countries
+
+### 2.4.1 Confirmed COVID-19 Cases Comparison
+
+```{r, echo=FALSE , message=FALSE , comment=NA}
+
+# filter neighbor countries all data
+neighbor_countries <- filter(coronavirus, country %in% c("Belgium","Netherlands","Germany","Luxembourg","France")) %>% mutate(cases = replace(cases, which(cases<0), 0))
+
+# getting pivoted table
+neighbor_countries_pivoted <- neighbor_countries %>% select(date,population,country,type,cases) %>% mutate(cases = replace(cases, which(cases < 0),0)) %>% pivot_wider(names_from = type, values_from = cases)
+
+# create mean table for countries
+mean_cases <- neighbor_countries_pivoted %>% group_by(country) %>% summarise(population = mean(population), confirmed_mean = mean(confirmed), Total_confirmed = sum(confirmed) ,death_mean = mean(death), Total_death = sum(death), recovery_mean = mean(recovery), Total_recovered = sum(recovery))
+
+# Define function for get summary table for countries
+summary_table_countries <- function(data , type) {
+  column_type <- sym(type)
+  
+  country_table <- data %>%
+    group_by(country) %>%
+    summarise(
+      population = mean(population),
+      mean = mean(!!column_type),
+      Total = sum(!!column_type)
+    )
+  
+  kable(country_table)
+}
+
+
+
+```
+
+
+```{r, echo=FALSE, fig.width=7, fig.height=5}
+
+# plot confirmed cases among 5 countries
+ggplot(neighbor_countries %>% filter(type == "confirmed"), aes(date, cases, col=cases)) +
+  geom_path(size=1) +
+  facet_grid(rows = vars(country)) +
+  labs(title="Figure 7 : Confirmed COVID-19 Cases With Neighbor Countries",
+       x="Date",
+       y="Number of Confirmed Cases")+
+  theme_minimal()+
+  theme(panel.spacing = unit(1, "lines"))+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+
+
+```{R, echo=FALSE, fig.width=7, fig.height=5}
+
+#call summary function
+summary_table_countries(neighbor_countries_pivoted , "confirmed")
+
+```
+
+The above figure 7 and table offer a comparative analysis of confirmed COVID-19 cases across five countries: Belgium, France, Germany, Luxembourg, and the Netherlands. The line graphs illustrate the daily confirmed cases from 2020 to 2023, while the table provides statistical summaries for each country, including population, average daily cases (mean), and total confirmed cases.
+
+From the graphs, we can observe that the number of confirmed cases fluctuated significantly over time in each country. Germany and France show the highest peaks, indicating substantial outbreaks at various points during the pandemic. Belgium and the Netherlands also experienced significant peaks but to a lesser extent. Luxembourg, while not having zero cases, recorded much fewer cases compared to the other countries.
+
+The table further quantifies these observations. Germany, with a population of about 83.8 million, had an average of 33,463 daily cases and a total of approximately 38.2 million confirmed cases. France, with a population of approximately 56.7 million, had an average of 2,942 daily cases and a total of around 40.4 million confirmed cases. Belgium and the Netherlands, despite their smaller populations (11.6 million and 3.5 million, respectively), had total cases of about 4.7 million and 8.7 million. Luxembourg, with the smallest population (625,976), had the fewest confirmed cases at 318,715 and an average of 279 daily cases.
+
+Overall, while Luxembourg had significantly fewer cases, the larger countries like Germany and France faced more considerable challenges in managing the pandemic, as reflected in their higher total and average daily cases.
+
+
+### 2.4.2 Death COVID-19 Cases Comparison
+
+```{r, echo=FALSE, fig.width=7, fig.height=5}
+
+# plot death cases among 5 countries
+ggplot(neighbor_countries %>% filter(type == "death"), aes(date, cases, col=cases)) +
+  geom_path(size=1) +
+  facet_grid(rows = vars(country)) +
+  labs(title="Figure 8 : Death COVID-19 Cases With Neighbor Countries",
+       x="Date",
+       y="Number of Death Cases")+
+  theme_minimal()+
+  theme(panel.spacing = unit(1, "lines"))+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+* Belgium: The graph shows several peaks of death cases, especially noticeable in late 2020 and early 2021, with some fluctuations afterwards.
+* France: Similar to Belgium, France experienced significant peaks in death cases, particularly in late 2020 and early 2021, followed by a gradual decline and smaller fluctuations in later years.
+* Germany: Germany had prominent peaks in death cases, with the most substantial peak occurring in early 2021. The number of death cases remained relatively high compared to other countries.
+* Luxembourg: The death cases in Luxembourg are much fewer and show smaller peaks compared to the other countries.
+* Netherlands: The Netherlands shows moderate peaks in death cases, particularly in late 2020 and early 2021, with a general decline afterwards.
+
+
+```{R, echo=FALSE, fig.width=7, fig.height=5}
+
+#call summary function
+summary_table_countries(neighbor_countries_pivoted , "death")
+
+```
+
+* Belgium: With a population of approximately 11.6 million, Belgium had a total of 33,931 deaths, averaging about 29.7 deaths per day.
+* France: France, with a population of about 56.8 million, recorded 166,723 total deaths, with an average of 12.2 deaths per day.
+* Germany: Germany, having the largest population among the listed countries (83.8 million), had a total of 168,944 deaths, averaging around 147.8 deaths per day.
+* Luxembourg: Luxembourg, with the smallest population (625,976), recorded 1,223 total deaths, averaging about 1.1 deaths per day.
+* Netherlands: The Netherlands, with a population of about 3.5 million, recorded 23,791 total deaths, with an average of 4.2 deaths per day.
+
+### 2.4.3 Recovery COVID-19 Cases Comparison
+
+
+```{r, echo=FALSE, fig.width=7, fig.height=5}
+
+# plot recovery cases among 5 countries
+ggplot(neighbor_countries %>% filter(type == "recovery"), aes(date, cases, col=cases)) +
+  geom_path(size=1) +
+  facet_grid(rows = vars(country)) +
+  labs(title="Figure 9 : Recovery COVID-19 Cases With Neighbor Countries",
+       x="Date",
+       y="Number of Recovery Cases")+
+  theme_minimal()+
+  theme(panel.spacing = unit(1, "lines"))+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+
+```{R, echo=FALSE, fig.width=7, fig.height=5}
+
+#call summary function
+summary_table_countries(neighbor_countries_pivoted , "recovery")
+
+```
+
+Above charts shows a graph comparing COVID-19 recovery cases in five countries: Belgium, France, Germany, Luxembourg, and the Netherlands, from 2020 to 2023. Each country has a separate line graph displaying the number of daily recoveries. Germany had the highest number of recoveries, peaking around early 2021, while the other countries had much lower numbers. The table below the graph provides additional details, including each country's population, the average number of recoveries per day (mean), and the total number of recoveries. Germany, with the largest population among the listed countries, also had the highest total number of recoveries at 3,663,580. In contrast, the Netherlands had the fewest recoveries, with a total of 28,776.
+
+
+### 2.4.4 Active COVID-19 Cases Comparison
+
+```{r , echo=FALSE , error=FALSE, message=FALSE , comment=NA}
+
+# create function get active table for each country
+country_active_case_table <- function(table_name, country){
+  
+  #assign data to tempory table
+   temp_active <- coronavirus %>% filter(country == !!country) %>% select(date,country,cases,type)
+   
+   #if countries have duplicated data, then get mean value of those
+   temp_active <- temp_active %>% group_by(date, country, type) %>% summarise(cases = round(mean(cases, na.rm = TRUE)), .groups = 'drop')
+  
+  temp_active <- temp_active %>% mutate(cases = replace(cases, which(cases < 0), 0))  %>% pivot_wider(names_from = type, values_from = cases)
+  
+  temp_active$active <- numeric(nrow(temp_active))
+  
+  temp_active$active[1] <- temp_active$confirmed[1] - temp_active$death[1] - temp_active$recovery[1]
+  for (i in 2:nrow(temp_active)) {
+    temp_active$active[i] <- temp_active$active[i-1] + temp_active$confirmed[i] - temp_active$death[i] - temp_active$recovery[i]
+    }
+  #assign tempory table to globaly define table
+  assign(table_name, temp_active, envir = .GlobalEnv)
+  #delete tempory table
+  rm(temp_active)
+  
+}
+
+#create neighbor countries active table
+country_active_case_table("belgium_active_table", "Belgium")
+country_active_case_table("Netherlands_active_table", "Netherlands")
+country_active_case_table("Germany_active_table", "Germany")
+country_active_case_table("Luxembourg_active_table", "Luxembourg")
+country_active_case_table("France_active_table", "France")
+
+#combine neighbor countries active tables
+neighbor_active <- bind_rows(belgium_active_table, Netherlands_active_table, Germany_active_table , Luxembourg_active_table , France_active_table)
+
+# plot for active cases amoung 5 countries
+ggplot(neighbor_active, aes(x = date, y = active , colour = country)) +
+  geom_line() +
+  labs(title = "Figure 10 : Active COVID-19 Cases With Neighbor Countries",
+       x = "Date",
+       y = "Number of active Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+```
+
+Figure 10 shows the number of active COVID-19 cases over time in Belgium and compares it with other countries: France, Germany, Luxembourg, and the Netherlands. From 2020 to 2023, the number of active cases increased significantly in all countries. Germany, represented by the green line, experienced the most substantial rise, particularly from late 2021 onwards, reaching over 30 million active cases. The other countries had much lower numbers of active cases. France and Belgium had moderate increases, while Luxembourg and the Netherlands had relatively small numbers of active cases throughout the period. The graph indicates that Germany faced a much larger burden of active COVID-19 cases compared to its neighboring countries during this time.
+
+# 3.Discussion And Conclusion
+
+### Discussion and Conclusion
+
+The analysis of COVID-19 recovery and active case trends in Belgium from 2020 to 2023 reveals a relatively controlled situation compared to other countries. Throughout this period, Belgium managed to maintain lower levels of active cases, avoiding the extreme surges observed elsewhere. This controlled state could be attributed to effective public health interventions, including timely lockdowns, widespread testing, efficient contact tracing, and a robust vaccination campaign. The country's ability to prevent overwhelming healthcare systems and manage the spread of the virus reflects a successful public health strategy.
+
+Despite experiencing fluctuations in recovery numbers, Belgium's efforts in controlling the pandemic are evident. The lower levels of active cases indicate that measures taken were largely effective in curbing the spread of the virus. These measures likely included a combination of social distancing policies, mask mandates, and public health campaigns that promoted safe behaviors among the population.
+
+In conclusion, Belgium's management of the COVID-19 pandemic demonstrates the importance of early and decisive public health interventions. The country's success in keeping active cases at manageable levels serves as a valuable case study for understanding effective pandemic responses. While challenges undoubtedly existed, Belgium's overall approach helped mitigate the worst impacts of the pandemic, safeguarding public health and maintaining healthcare system capacity. Future public health strategies can benefit from examining Belgium's response to identify best practices and areas for improvement, ensuring preparedness for potential future pandemics.
+
+# 4. References
+
+* https://en.wikipedia.org/wiki/Belgium
+
+* https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Belgium
+
+
+
+
+
